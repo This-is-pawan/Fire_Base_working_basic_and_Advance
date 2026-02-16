@@ -1,38 +1,28 @@
 import { getDatabase, ref, set } from "firebase/database";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider,signInWithPopup } from "firebase/auth";
 
 import { app } from "./firebase";
-import Signup from "./pages/signup";
-import Signin from "./pages/Signin";
-import { useFirebaseContext } from "./context/Firebase";
+const GoogleProvider= new GoogleAuthProvider()
+
 import { useState } from "react";
-// const auth=getAuth(app)
-// const db = getDatabase(app);
+import { useFirebaseContext } from "./context/Firebase";
+const auth=getAuth(app)
 
 const App = () => {
-  // const putData = () => {
-  //   set(ref(db, "user/pawan"), {
-  //     id: 1,
-  //     name: "pawan verma",
-  //     age: 21,
-  //   });
-  // };
-  // const signupUser=(params)=> {
-  //   createUserWithEmailAndPassword(auth,'pawanjalandhara2001@gmail.com','pk1234').then((value)=>console.log(value)
-  //   )
-  // }
+
+ 
 
   const firebase = useFirebaseContext();
   // console.log("firebase", firebase);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+const SingupwithGoogle=()=>{
+  signInWithPopup(auth,GoogleProvider)
+}
   return (
     <div>
       <h1 className="text-center">Firebase</h1>
-      {/* <Signup/>
-       <Signin/> */}
-      {/* <button className="bg-black text-white p-1 rounded ml-4 cursor-pointer" onClick={putData}>Put data in Firebase</button> */}
+     
 
       {/*  */}
 
@@ -54,6 +44,11 @@ const App = () => {
           }}
           className="bg-pink-100 p-2 "
         />
+        <br />
+        <br />
+        <button className="bg-pink-300 p-2 capitalize " onClick={SingupwithGoogle}>Continue With Google</button>
+        <br />
+        <br />
         <button
           onClick={() => {
             firebase.singupUserWithEmailAndPassword(email, password);
