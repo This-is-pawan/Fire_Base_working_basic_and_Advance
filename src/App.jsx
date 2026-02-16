@@ -23,7 +23,7 @@ const App = () => {
   // }
 
   const firebase = useFirebaseContext();
-  console.log("firebase", firebase);
+  // console.log("firebase", firebase);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -37,13 +37,14 @@ const App = () => {
       {/*  */}
 
       <h1>Firebase</h1>
-      <div>
+      <div className=" w-[550px] border p-6 m-auto bg-black text-white   ">
         <input
           type="email"
           placeholder="Enter Email"
           onChange={(e) => {
             setEmail(e.target.value);
           }}
+          className="bg-pink-100 p-2 "
         />
         <input
           type="password"
@@ -51,6 +52,7 @@ const App = () => {
           onChange={(e) => {
             setPassword(e.target.value);
           }}
+          className="bg-pink-100 p-2 "
         />
         <button
           onClick={() => {
@@ -60,6 +62,7 @@ const App = () => {
               password: password,
             });
           }}
+          className="bg-pink-300 p-2 capitalize "
         >
           Signup
         </button>
