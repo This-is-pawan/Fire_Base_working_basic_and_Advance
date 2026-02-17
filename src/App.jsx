@@ -1,84 +1,153 @@
-import React, { useState,useEffect } from 'react'
-import { getFirestore, collection, addDoc ,doc,getDoc,} from 'firebase/firestore'
-import { app } from './firebase'
+import React, { useState, useEffect } from "react";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc
+} from "firebase/firestore";
+import { app } from "./firebase";
 
 const firestore = getFirestore(app);
 
 const App = () => {
-const [user_data,setuser_data]=useState('')
+  const [user_data, setuser_data] = useState(null);
+
+  // 🔎 Get document using Query
+  const GetDocumentQuery = async () => {
+    try {
+      const collectionRef = collection(firestore, "users");
+
+      // Correct operator ==
+      const q = query(collectionRef, where("isMale", "==", true));
+
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach((docSnap) => {
+        console.log("Query Data:", docSnap.data());
+        console.log(user_data);
+        
+        setuser_data(docSnap.data())
+      });
+    } catch (error) {
+      console.log("Query Error:", error);
+    }
+  };
+
+  // ✍️ Write Data
   const writeData = async () => {
     try {
-      const result = await addDoc(collection(firestore, 'cities'), {
-        name: 'Delhi',
-        pincode: 1234,
-        lat: 123,
-        long: 456,
+      const result = await addDoc(collection(firestore, "users"), {
+        name: "sham",
+        age: 21,
+        work:'website',
+        isMale:true
       });
-setuser_data(result)
-      console.log('result', result);
+
+      console.log("Write Result:", result.id);
     } catch (err) {
-      console.error('Error:', err);
+      console.error("Write Error:", err);
     }
-  }
-   const makeSubCollection= async () => {
+  };
+
+  // 📁 Create Subcollection
+  const makeSubCollection = async () => {
     try {
-      const result = await addDoc(collection(firestore, 'cities/5fDtvyfBwoemCC7bYrPm/places'), {
-        name: 'place',
-       desc:'awsm desc',
-       date:Date.now()
-      });
+      const result = await addDoc(
+        collection(firestore, "cities/5fDtvyfBwoemCC7bYrPm/places"),
+        {
+          name: "place",
+          desc: "awesome desc",
+          date: Date.now(),
+        }
+      );
 
-      console.log('result', result);
+      console.log("Subcollection Write:", result.id);
     } catch (err) {
-      console.error('Error:', err);
+      console.error("Subcollection Error:", err);
     }
-  }
-const GetDocument = async () => {
-  try {
-    const ref = doc(
-      firestore,
-      'cities',
-      '5fDtvyfBwoemCC7bYrPm',
-      'places',
-      '8NYk1G65WAVmW14Wrm0z'
-    );
+  };
 
-    console.log("Doc Ref:", ref);
+  // 📄 Get Single Document
+  const GetDocument = async () => {
+    try {
+      const ref = doc(
+        firestore,
+        "cities",
+        "5fDtvyfBwoemCC7bYrPm",
+        "places",
+        "8NYk1G65WAVmW14Wrm0z"
+      );
 
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      console.log("Document Data:", snap.data());
-            setuser_data(snap.data());
+      const snap = await getDoc(ref);
 
-    } else {
-      console.log("No such document found!");
+      if (snap.exists()) {
+        console.log("Document Data:", snap.data());
+        setuser_data(snap.data());
+      } else {
+        console.log("No such document!");
+      }
+    } catch (error) {
+      console.log("Get Doc Error:", error);
     }
-  } catch (error) {
-    console.log("Error getting document:", error);
-  }
-};
+  };
 
-useEffect(() => {
-GetDocument()
-}, [])
+ const updateDoucment=async () => {
+  const docRef= doc(firestore,'users','pXYNwxHgnnVywexCT1IU');
+ await updateDoc(docRef,{
+    name:'sham',
+    age:22,
+    isMale:true,
+    work:'App Developer'
+    
+  })
+ }
+
+ const DeleteDoucment=async () => {
+  const docRef= doc(firestore,'users','pXYNwxHgnnVywexCT1IU');
+ await deleteDoc(docRef)
+ }
+
 
   return (
-    <div>
+    <div style={{ padding: 20 }}>
       <h1>Firebase Firestore</h1>
-        <p>user: {user_data?.name}</p>
-      <p>desc: {user_data?.desc}</p>
-      <p>date: {user_data?.date}</p>
-      <button onClick={writeData} className='bg-black text-white p-2 m-2 rounded'>
+
+      <p>User: {user_data?.name || "No data"}</p>
+      <p>age: {user_data?.age || "No data"}</p>
+      <p>work: {user_data?.work || "No data"}</p>
+
+      <button onClick={writeData} className="bg-black text-white p-2 m-2 rounded">
         Write Data
       </button>
-      <button onClick={makeSubCollection} className='bg-black text-white p-2 m-2 rounded'>
-        Write sub-data
+
+      <button onClick={makeSubCollection} className="bg-black text-white p-2 m-2 rounded">
+        Write Sub Data
       </button>
-         <button onClick={GetDocument} className='bg-black text-white p-2 m-2 rounded'>
-       Get-document
+
+      <button onClick={GetDocument} className="bg-black text-white p-2 m-2 rounded">
+        Get Document
+      </button>
+
+      <button onClick={GetDocumentQuery} className="bg-black text-white p-2 m-2 rounded">
+        Get By Query
+      </button>
+
+       <button onClick={updateDoucment} className="bg-black text-white p-2 m-2 rounded">
+        update
+      </button>
+
+      
+       <button onClick={DeleteDoucment} className="bg-black text-white p-2 m-2 rounded">
+        Delete
       </button>
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
