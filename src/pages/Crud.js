@@ -11,8 +11,29 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { app } from "../firebase";
-
+import {getDatabase,set,ref,get,child, Database,onValue} from 'firebase/database'
+import { useState } from "react";
+const database=getDatabase(app)
 const firestore = getFirestore(app);
+
+// get(child(ref(database),'grandfather/father/child')).then((snapshot)=>console.log(snapshot.val()));
+export const GetFromDb = (setName) => {
+  const dbRef = ref(database, "grandfather");
+
+  onValue(dbRef, (snapshot) => {
+    if (snapshot.exists()) {
+      setName(snapshot.val().father.child.name);
+      console.log(snapshot.val().father.child.name);
+    } else {
+      console.log("No data found");
+    }
+  });
+};
+
+
+ 
+
+
 
 // 🔎 Get document using Query
 export const GetDocumentQuery = async (setuser_data) => {
@@ -85,3 +106,11 @@ export const DeleteDoucment = async () => {
   const docRef = doc(firestore, "users", "pXYNwxHgnnVywexCT1IU");
   await deleteDoc(docRef);
 };
+
+// put in db of realtime db of firebase
+
+export const putDataNew= (firebase) => {
+  firebase.putData('grandfather/father/child',{id:1,name:'pawan verma',age:24})
+ 
+  
+}
