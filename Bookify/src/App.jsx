@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Login from './pages/Login';
 import Home from './components/Home';
 import Navbar from './components/Navbar';
+import AddListing from './pages/AddListing';
 const App = () => {
   return (
     <div>
@@ -23,6 +24,7 @@ const App = () => {
         <Route path='/' element={<Home/>}/>
         <Route path='/register' element={<Register/>}/>
         <Route path='/login' element={<Login/>}/>
+        <Route path='/add-listing' element={<AddListing/>}/>
       </Routes>
     </div>
   )

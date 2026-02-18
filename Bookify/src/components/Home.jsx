@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useFirebase } from '../context/Firebase'
 
 const Home = () => {
@@ -7,6 +7,11 @@ const Home = () => {
   const img = firebase?.user?.photoURL
   const name = firebase?.user?.displayName
   const email = firebase?.user?.email
+  const [books,setBooks]=useState([])
+useEffect(()=>{
+firebase.listAllBooks().then((docs)=>setBooks(docs.docs)
+)
+},[])
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-pink-200 to-purple-300 flex items-center justify-center px-6">
@@ -34,9 +39,13 @@ const Home = () => {
         <button className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-full shadow-md transition duration-300">
           Edit Profile
         </button>
-
-      </div>
-
+<h1 className='p-3'>list books</h1>
+{books.map((card)=>{
+  return <div>
+  <h1>{card}</h1>
+</div>
+})}
+</div>
     </div>
   )
 }

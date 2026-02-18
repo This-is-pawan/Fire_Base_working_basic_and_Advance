@@ -29,12 +29,20 @@ const Navbar = () => {
 
         {/* Auth Buttons */}
         {authenticated ? (
+         <>
+          <Link
+            to="/add-listing"
+            className="bg-blue-500 hover:bg-blue-600 px-4 py-1 rounded-md transition"
+          >
+           AddListing
+          </Link>
           <button
             onClick={handleLogout}
             className="bg-red-500 hover:bg-red-600 px-4 py-1 rounded-md transition"
           >
             Logout
           </button>
+         </>
         ) : (
           <Link
             to="/register"

@@ -1,4 +1,4 @@
-import { createContext, useContext,useEffect,useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -8,94 +8,147 @@ import {
   onAuthStateChanged,
   signOut,
 } from "firebase/auth";
-import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+} from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { toast } from "react-toastify";
 
-// Create Context
-const FirebaseContext = createContext({});
+/* ================= FIREBASE INIT (FIXED) ================= */
 
-// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyDq4H7-09CrRi-fk10TXMNywSaqzPyLAzE",
   authDomain: "bookify-e3063.firebaseapp.com",
   projectId: "bookify-e3063",
-  storageBucket: "bookify-e3063.firebasestorage.app",
+  storageBucket: "bookify-e3063.appspot.com",
   messagingSenderId: "391679805330",
   appId: "1:391679805330:web:cb12d4f37e2716d64ee34b",
 };
 
-// Initialize Firebase
-const firebaseApp = initializeApp(firebaseConfig);
+// 🔥 Prevent duplicate app error (VERY IMPORTANT for Vite)
+const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
 const firebaseAuth = getAuth(firebaseApp);
-// google auth
-const googleProvider=new GoogleAuthProvider()
-const signinWithGoogle=()=>{
-  return signInWithPopup(firebaseAuth,googleProvider)
-}
-// Custom Hook
+const firestore = getFirestore(firebaseApp);
+const storage = getStorage(firebaseApp);
+
+/* ================= CONTEXT ================= */
+
+const FirebaseContext = createContext(null);
 export const useFirebase = () => useContext(FirebaseContext);
 
+/* ================= PROVIDER ================= */
 
-// Provider
 export const FirebaseProvider = ({ children }) => {
-  // 
-  const [user,setUser]=useState(null)
+  const [user, setUser] = useState(null);
+
+  /* -------- Auth State Listener -------- */
   useEffect(() => {
-onAuthStateChanged(firebaseAuth,user=>{
-  if (user) setUser(user);
-    else setUser(null);
-  
-  
-})
-  }, [])
-  // 🔐 Signup
+    const unsubscribe = onAuthStateChanged(firebaseAuth, (currentUser) => {
+      setUser(currentUser || null);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  /* -------- Google Login -------- */
+  const googleProvider = new GoogleAuthProvider();
+  const signinWithGoogle = () =>
+    signInWithPopup(firebaseAuth, googleProvider);
+
+  /* -------- Signup -------- */
   const signupUserWithEmailAndPassword = async (email, password) => {
     try {
-      const userCredential = await createUserWithEmailAndPassword(
+      return await createUserWithEmailAndPassword(
         firebaseAuth,
         email,
         password
       );
-      return userCredential;
     } catch (error) {
-      toast.error("singup Error:", error.message);
+      toast.error(error.message);
     }
   };
 
-  // 🔐 Signin
+  /* -------- Signin -------- */
   const signinUserWithEmailAndPassword = async (email, password) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
+      return await signInWithEmailAndPassword(
         firebaseAuth,
         email,
         password
       );
-      return userCredential;
     } catch (error) {
-       toast.error("sigin Error:", error.message);
+      toast.error(error.message);
     }
   };
-  // logout
-  const logoutUser = async () => {
-  try {
-    await signOut(firebaseAuth);
-    
-  } catch (error) {
-    toast.error("Logout Error:", error.message);
-    
-  }
-};
 
-const isLoggedIn=user?true:false;
+  /* -------- Logout -------- */
+  const logoutUser = async () => {
+    try {
+      await signOut(firebaseAuth);
+      toast.success("Logged out successfully");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  /* -------- Create Book (Firestore + Storage) -------- */
+  const handleCreateNewListing = async (name, isbn, price, coverFile) => {
+    try {
+      if (!coverFile) return toast.error("Cover image required");
+
+      // Upload image
+      const imageRef = ref(
+        storage,
+        `covers/${Date.now()}_${coverFile.name}`
+      );
+      await uploadBytes(imageRef, coverFile);
+
+      // Get URL
+      const imageURL = await getDownloadURL(imageRef);
+
+      // Save in Firestore
+      await addDoc(collection(firestore, "books"), {
+        name,
+        isbn,
+        price,
+        coverURL: imageURL,
+        userId: user?.uid || null,
+        createdAt: new Date(),
+      });
+
+      toast.success("Book added successfully 📚");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  /* -------- Get All Books -------- */
+  const listAllBooks = async () => {
+    return await getDocs(collection(firestore, "books"));
+  };
+
+  const isLoggedIn = !!user;
+
   return (
     <FirebaseContext.Provider
       value={{
+        user,
+        isLoggedIn,
+        signinWithGoogle,
         signupUserWithEmailAndPassword,
         signinUserWithEmailAndPassword,
-        signinWithGoogle,
-        isLoggedIn,
         logoutUser,
-        user
+        handleCreateNewListing,
+        listAllBooks,
       }}
     >
       {children}
